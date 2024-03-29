@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+*.egg
+*.log
+*.swp
+.vscode/
+.DS_Store
+.env
+venv/
+mvenv/
+testmaker.txt

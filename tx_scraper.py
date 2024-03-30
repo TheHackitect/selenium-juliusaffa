@@ -11,6 +11,8 @@ from selenium.common.exceptions import TimeoutException, StaleElementReferenceEx
 import undetected_chromedriver as uc
 from selenium.webdriver.common.action_chains import ActionChains
 import asyncio
+from art import *
+from termcolor import colored
 
 # Telegram Bot Token and Channel ID
 TOKEN = "5982304690:AAGMGPOrrXUFCCvh-1qx6b1V13ayiw_4Z4E"
@@ -35,13 +37,24 @@ c.execute('''CREATE TABLE IF NOT EXISTS transactions
 
 # Initialize Chrome WebDriver
 chrome_options = Options()
-# chrome_options.add_argument("--headless")
+chrome_options.add_argument("--headless")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-gpu")
 service = Service('chromedriver.exe')  # Specify the path to your ChromeDriver
 driver = uc.Chrome(service=service, options=chrome_options)
 # driver = webdriver.Chrome(service=service, options=chrome_options)
+
+
+# Function to generate a customized ASCII logo
+def generate_logo():
+    logo_text = '''scrape'''
+    colorful_logo = text2art(logo_text, font='block', chr_ignore=True)
+    colorful_logo = colorful_logo.replace('A', colored('A', 'green'))
+    colorful_logo = colorful_logo.replace('D', colored('D', 'yellow'))
+    colorful_logo = colorful_logo.replace('U', colored('U', 'cyan'))
+    colorful_logo = colorful_logo.replace('#', colored('█', 'blue'))
+    return colorful_logo
 
 # Define function to scrape transactions
 
@@ -59,7 +72,7 @@ async def scrape_transactions():
         # Wait for the transactions to load
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, "span.css-rzw9lk")))
     except TimeoutException:
-        print("Timeout while waiting for table rows to load")
+        pass
         return
     time.sleep(10)
     # Find all spans with class css-rzw9lk
@@ -109,17 +122,21 @@ async def scrape_transactions():
                 # Check if the transaction ID exists in the database
                 c.execute("SELECT * FROM transactions WHERE txn_hash=?", (txn_hash,))
                 if c.fetchone() is None:
-                    print(f"New stake transaction detected! --- Tx Id : {txn_hash}")
                     driver.get(f"{txn_link}")
 
                     # Wait for the new page to load
                     try:
                         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, "span.css-1qvzvvz")))
                     except TimeoutException:
-                        print("Timeout while waiting for the new page to load")
+                        pass
                         return
-                    time.sleep(10)
-
+                    
+                    # Wait for the new page to load
+                    try:
+                        WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CLASS_NAME, "css-11fgcdr")))
+                    except TimeoutException:
+                        pass
+                        return
 
                     address_element = driver.find_element(By.CLASS_NAME, "css-11fgcdr")
                     address_text = address_element.get_attribute("data-hash")
@@ -139,24 +156,16 @@ async def scrape_transactions():
                             coin_name = coin_name_element.text
                             dollar_value = dollar_value_element.text
                             amount_staked = amount_staked_element.text
-                            
-                            # Process the extracted data (e.g., send Telegram message)
-                            print(f"Coin Name: {coin_name}")
-                            print(f"Dollar Value: {dollar_value}")
-                            print(f"Amount Staked: {amount_staked}")
-                            print(f"Address link: {address_link}")
-                            print(f"Address Text: {address_text}")
 
-                            message  = f"**New $APE STAKE!\n\n🦧 {amount_staked} $APE staked ~ {dollar_value} $ \n\n🪪 [{truncated_address_text}]({address_link}) |  [TXS]({txn_hash_link})  \n\nTotal $APE staked : {total_staked_value} ({percentage_formatted}%) ~ {total_staked_dollar_value}\n\n[Chart](https://www.dextools.io/app/en/bitrock/pair-explorer/0x95864a19274a5dfe8cae3a5dbef6dbeb795febde?t=1711652012988/) | [Website](https://apetoken.net/) | [Telegram](http://t.me/ApeOnBitrock)**"
+                            message  = f"New $APE STAKE!\n\n**🦧 {amount_staked} $APE staked ~ {dollar_value} $ **\n\n🪪 [{truncated_address_text}]({address_link}) |  [TXS]({txn_hash_link})  \n\n**Total $APE staked : {total_staked_value} ({percentage_formatted}%) ~ {total_staked_dollar_value}**\n\n[Chart](https://www.dextools.io/app/en/bitrock/pair-explorer/0x95864a19274a5dfe8cae3a5dbef6dbeb795febde?t=1711652012988/) | [Website](https://apetoken.net/) | [Telegram](http://t.me/ApeOnBitrock)"
                             # Send message with image and inline keyboard
                             bot = Bot(token=TOKEN)
                             # await bot.send_photo(chat_id=CHAT_ID, photo=open(image_path, 'rb'), caption=message, parse_mode="Markdown")
                             await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode="Markdown",reply_markup=reply_markup, disable_web_page_preview=True)
 
                             # Add the transaction ID to the SQLite database to keep track of processed transactions
-                            c.execute("INSERT INTO transactions (txn_hash) VALUES (?)", (txn_hash,))
-                            conn.commit()
-                            print("New transaction processed and sent to Telegram:", txn_hash)
+                            # c.execute("INSERT INTO transactions (txn_hash) VALUES (?)", (txn_hash,))
+                            # conn.commit()
 
                             # Exit the loop after processing the relevant element (optional)
                             break
@@ -164,7 +173,7 @@ async def scrape_transactions():
                             pass
                     
                 else:
-                    print("Transaction already processed:", txn_hash)
+                    pass
                 break  # Exit the loop after processing the first "stake" transaction
         except StaleElementReferenceException:
             pass
@@ -175,10 +184,12 @@ async def scrape_transactions():
 async def main():
     while True:
         await scrape_transactions()
-        await asyncio.sleep(5 * 60)  # Scrape every 5 minutes (use 5 * 60 for seconds)
+        await asyncio.sleep(5)  # Scrape every 5 minutes (use 5 * 60 for seconds)
 
 if __name__ == "__main__":
+    print(generate_logo())
     asyncio.run(main())
+
 # Close database connection and WebDriver
 conn.close()
 driver.quit()

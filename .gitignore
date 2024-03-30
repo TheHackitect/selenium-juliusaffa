@@ -13,4 +13,3 @@ dist/
 venv/
 mvenv/
 testmaker.txt
-chromedriver.exe

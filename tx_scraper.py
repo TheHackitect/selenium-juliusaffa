@@ -13,10 +13,14 @@ from selenium.webdriver.common.action_chains import ActionChains
 import asyncio
 from art import *
 from termcolor import colored
+import random
+
 
 # Telegram Bot Token and Channel ID
-TOKEN = "5982304690:AAGMGPOrrXUFCCvh-1qx6b1V13ayiw_4Z4E"
-CHAT_ID = 1233125771
+# TOKEN = "7056352725:AAFlj2Ip9PoO4ZD8MBchb1zrru76PgZ61zs"
+TOKEN = "5982304690:AAEHikZumTlJUpZx4Ivmro-CFpDNVILnwj8"
+CHAT_ID = -4046830011
+# CHAT_ID = -1002005976955
 TOTAL_TOKENS = 200000000000
 
 # Define inline keyboard buttons
@@ -25,7 +29,7 @@ keyboard = [[
 ]]
 reply_markup = InlineKeyboardMarkup(keyboard)
 
-image_path = "ape.jpg"
+image_path = "ape2.png"
 
 # Initialize SQLite database
 conn = sqlite3.connect('transactions.db')
@@ -37,7 +41,7 @@ c.execute('''CREATE TABLE IF NOT EXISTS transactions
 
 # Initialize Chrome WebDriver
 chrome_options = Options()
-chrome_options.add_argument("--headless")
+# chrome_options.add_argument("--headless")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-gpu")
@@ -48,7 +52,7 @@ driver = uc.Chrome(service=service, options=chrome_options)
 
 # Function to generate a customized ASCII logo
 def generate_logo():
-    logo_text = '''scrape'''
+    logo_text = '''$APE'''
     colorful_logo = text2art(logo_text, font='block', chr_ignore=True)
     colorful_logo = colorful_logo.replace('A', colored('A', 'green'))
     colorful_logo = colorful_logo.replace('D', colored('D', 'yellow'))
@@ -92,7 +96,6 @@ async def scrape_transactions():
     total_staked_raw = total_staked_text.split(" ")[0]
     value_without_commas = total_staked_raw.replace(",", "")
 
-
     # Convert to float, round to 3 decimal places, and then convert back to string
     total_staked_value = "{:.3f}".format(float(value_without_commas))
     
@@ -103,7 +106,6 @@ async def scrape_transactions():
     # Find the <p> element containing the dollar value
     dollar_value_element = driver.find_element(By.CLASS_NAME, "chakra-text.css-bjdz1t")
     total_staked_dollar_value = dollar_value_element.text
-
 
     # Iterate over the spans
     for span in spans:
@@ -144,7 +146,6 @@ async def scrape_transactions():
                     address_link = f"https://explorer.bit-rock.io/address/{address_text}"
                     
                     stake_elements = driver.find_elements(By.CSS_SELECTOR, ".css-1bb3n0r")  # Find all elements with class "css-1bb3n0r"
-
                     for element in stake_elements:
                         # Check if this element contains the text "ApeStaking"
                         if "ApeStaking" in element.text:
@@ -157,15 +158,15 @@ async def scrape_transactions():
                             dollar_value = dollar_value_element.text
                             amount_staked = amount_staked_element.text
 
-                            message  = f"New $APE STAKE!\n\n**🦧 {amount_staked} $APE staked ~ {dollar_value} $ **\n\n🪪 [{truncated_address_text}]({address_link}) |  [TXS]({txn_hash_link})  \n\n**Total $APE staked : {total_staked_value} ({percentage_formatted}%) ~ {total_staked_dollar_value}**\n\n[Chart](https://www.dextools.io/app/en/bitrock/pair-explorer/0x95864a19274a5dfe8cae3a5dbef6dbeb795febde?t=1711652012988/) | [Website](https://apetoken.net/) | [Telegram](http://t.me/ApeOnBitrock)"
+                            message = f"<b>New $APE STAKE!</b>\n\n<b>🦧 {amount_staked} $APE staked ~ {dollar_value} </b>\n\n🪪 <a href='{address_link}'>{truncated_address_text}</a> | <a href='{txn_hash_link}'>TXS</a>\n\n<b>Total $APE staked : {total_staked_value} ({percentage_formatted}%) ~ {total_staked_dollar_value}</b>\n\n<a href='https://www.dextools.io/app/en/bitrock/pair-explorer/0x95864a19274a5dfe8cae3a5dbef6dbeb795febde?t=1711652012988/'>Chart</a> | <a href='https://apetoken.net/'>Website</a> | <a href='http://t.me/ApeOnBitrock'>Telegram</a>"
                             # Send message with image and inline keyboard
                             bot = Bot(token=TOKEN)
-                            # await bot.send_photo(chat_id=CHAT_ID, photo=open(image_path, 'rb'), caption=message, parse_mode="Markdown")
-                            await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode="Markdown",reply_markup=reply_markup, disable_web_page_preview=True)
+                            await bot.send_photo(chat_id=CHAT_ID, photo=open(image_path, 'rb'), caption=message, parse_mode="HTML", reply_markup=reply_markup)
+                            # await bot.send_message(chat_id=CHAT_ID, text=message, parse_mode="HTML", reply_markup=reply_markup, disable_web_page_preview=True)
 
-                            # Add the transaction ID to the SQLite database to keep track of processed transactions
-                            # c.execute("INSERT INTO transactions (txn_hash) VALUES (?)", (txn_hash,))
-                            # conn.commit()
+                            # Add the transaction ID to the SQLite database to skeep track of processed transactions
+                            c.execute("INSERT INTO transactions (txn_hash) VALUES (?)", (txn_hash,))
+                            conn.commit()
 
                             # Exit the loop after processing the relevant element (optional)
                             break
@@ -184,7 +185,8 @@ async def scrape_transactions():
 async def main():
     while True:
         await scrape_transactions()
-        await asyncio.sleep(5)  # Scrape every 5 minutes (use 5 * 60 for seconds)
+        wait_time = random.randint(8, 15)
+        await asyncio.sleep(wait_time)  # Scrape every 5 minutes (use 5 * 60 for seconds)
 
 if __name__ == "__main__":
     print(generate_logo())

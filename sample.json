@@ -1,0 +1,77 @@
+{
+    "timestamp": "2024-06-09T14:25:45.000000Z",
+    "fee": {
+        "type": "actual",
+        "value": "202648500000000"
+    },
+    "gas_limit": "157623",
+    "block": 20744523,
+    "status": "ok",
+    "method": "stake",
+    "confirmations": 214325,
+    "type": 0,
+    "exchange_rate": "0.082269",
+    "to": {
+        "ens_domain_name": null,
+        "hash": "0xe042DC9d91B5ce6E63579ae1287E993cDf41F8cE",
+        "implementation_name": null,
+        "is_contract": true,
+        "is_verified": true,
+        "metadata": null,
+        "name": "ApeStaking",
+        "private_tags": [],
+        "public_tags": [],
+        "watchlist_names": []
+    },
+    "tx_burnt_fee": null,
+    "max_fee_per_gas": null,
+    "result": "success",
+    "hash": "0x6b35caec9a2064aae410c80867bb05d691df11bcf77c4783ca9329301ffa289a",
+    "gas_price": "1500000000",
+    "priority_fee": null,
+    "base_fee_per_gas": null,
+    "from": {
+        "ens_domain_name": null,
+        "hash": "0xAA67598B485d713FFdc7a7F78e2337f7Cb254DfE",
+        "implementation_name": null,
+        "is_contract": false,
+        "is_verified": false,
+        "metadata": null,
+        "name": null,
+        "private_tags": [],
+        "public_tags": [],
+        "watchlist_names": []
+    },
+    "token_transfers": null,
+    "tx_types": [
+        "contract_call",
+        "token_transfer"
+    ],
+    "gas_used": "135099",
+    "created_contract": null,
+    "position": 0,
+    "nonce": 12,
+    "has_error_in_internal_txs": null,
+    "actions": [],
+    "decoded_input": {
+        "method_call": "stake(uint256 amount)",
+        "method_id": "a694fc3a",
+        "parameters": [
+            {
+                "name": "amount",
+                "type": "uint256",
+                "value": "33875936000000000"
+            }
+        ]
+    },
+    "token_transfers_overflow": null,
+    "raw_input": "0xa694fc3a000000000000000000000000000000000000000000000000007859fbfbb6c000",
+    "value": "0",
+    "max_priority_fee_per_gas": null,
+    "revert_reason": null,
+    "confirmation_duration": [
+        0,
+        1000
+    ],
+    "tx_tag": null
+}
